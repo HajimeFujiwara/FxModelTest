@@ -131,6 +131,7 @@ class GPModel(gp.models.ExactGP):
     @staticmethod
     def experiment_initialize(train_x: torch.Tensor,
                              train_y: torch.Tensor,
+                             nu: float,
                              device: str) -> Tuple['GPModel', gp.likelihoods.Likelihood, 'GPTrainer']:
         """
         標準設定でGPModelを初期化します。
@@ -147,8 +148,13 @@ class GPModel(gp.models.ExactGP):
 
         model = GPModel(train_x, train_y, likelihood)
         model.set_mean_module(gp.means.ConstantMean())
-        model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.RBFKernel(ard_num_dims=train_x.shape[1])) 
-                               + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
+        
+        if nu == 0.0:
+            model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.RBFKernel(ard_num_dims=train_x.shape[1])) 
+                                   + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
+        else:
+            model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.MaternKernel(nu, ard_num_dims=train_x.shape[1])) 
+                                   + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
 
         likelihood = likelihood.to(device)
         model = model.to(device)
