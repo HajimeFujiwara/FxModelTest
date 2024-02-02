@@ -127,6 +127,33 @@ class GPModel(gp.models.ExactGP):
         model = model.to(device)
 
         return model, likelihood, GPTrainer()
+    
+    @staticmethod
+    def experiment_initialize(train_x: torch.Tensor,
+                             train_y: torch.Tensor,
+                             device: str) -> Tuple['GPModel', gp.likelihoods.Likelihood, 'GPTrainer']:
+        """
+        標準設定でGPModelを初期化します。
+
+        Args:
+            train_x (torch.Tensor): トレーニングの入力データ
+            train_y (torch.Tensor): トレーニングのターゲットデータ
+            device (str): モデルに使用するデバイス('cpu' or 'cuda')
+
+        Returns:
+            Tuple['GPModel', gpytorch.likelihoods.Likelihood]: 初期化されたGPModelと尤度関数
+        """
+        likelihood = gp.likelihoods.GaussianLikelihood()
+
+        model = GPModel(train_x, train_y, likelihood)
+        model.set_mean_module(gp.means.ConstantMean())
+        model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.RBFKernel(ard_num_dims=train_x.shape[1])) 
+                               + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
+
+        likelihood = likelihood.to(device)
+        model = model.to(device)
+
+        return model, likelihood, GPTrainer()
 
     @staticmethod
     def spectral_initialize(train_x: torch.Tensor,
