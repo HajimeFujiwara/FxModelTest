@@ -159,3 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 smallTests.ipynb
+rst_20days_Mattern25.tsv
+rst_20days_RBF.tsv
+count_20days_Mattern25.csv
+count_20days_RBF.csv
+FxModelAnalysis.html
