@@ -127,7 +127,7 @@ class GPModel(gp.models.ExactGP):
         model = model.to(device)
 
         return model, likelihood, GPTrainer()
-    
+
     @staticmethod
     def experiment_initialize(train_x: torch.Tensor,
                              train_y: torch.Tensor,
@@ -148,13 +148,15 @@ class GPModel(gp.models.ExactGP):
 
         model = GPModel(train_x, train_y, likelihood)
         model.set_mean_module(gp.means.ConstantMean())
-        
+
         if nu == 0.0:
             model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.RBFKernel(ard_num_dims=train_x.shape[1])) 
                                    + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
         else:
             model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.MaternKernel(nu, ard_num_dims=train_x.shape[1])) 
                                    + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
+
+        # model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
 
         likelihood = likelihood.to(device)
         model = model.to(device)
@@ -164,7 +166,7 @@ class GPModel(gp.models.ExactGP):
     @staticmethod
     def spectral_initialize(train_x: torch.Tensor,
                             train_y: torch.Tensor,
-                            device: str, 
+                            device: str,
                             num_mixtures: int = 4) -> Tuple['GPModel', gp.likelihoods.Likelihood, 'GPTrainer']:
         """
         SpectralMixtureKernelを用いてGPModelを初期化します。
@@ -179,6 +181,9 @@ class GPModel(gp.models.ExactGP):
             Tuple['GPModel', gpytorch.likelihoods.Likelihood]: 初期化されたGPModelと尤度関数
         """
         model, likelihood, trainer = GPModel.standard_initialize(train_x, train_y, device)
+        likelihood = likelihood.to(device)
+        model = model.to(device)
+
         model.set_spectral_mixture_kernel(num_mixtures, train_x, train_y)
 
         return model, likelihood, trainer
