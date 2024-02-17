@@ -152,11 +152,11 @@ class GPModel(gp.models.ExactGP):
         if nu == 0.0:
             model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.RBFKernel(ard_num_dims=train_x.shape[1])) 
                                    + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
-        else:
+        elif nu > 0.0:
             model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.MaternKernel(nu, ard_num_dims=train_x.shape[1])) 
                                    + gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
-
-        # model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
+        else:
+            model.set_covar_module(gp.kernels.ScaleKernel(gp.kernels.PeriodicKernel(ard_num_dims=train_x.shape[1])))
 
         likelihood = likelihood.to(device)
         model = model.to(device)
